@@ -18,6 +18,7 @@ add_clang_library(clangTidyPlugin
   clangTidyGoogleModule
   clangTidyHICPPModule
   clangTidyLLVMModule
+  clangTidyMesosModule
   clangTidyMiscModule
   clangTidyModernizeModule
   clangTidyObjCModule
