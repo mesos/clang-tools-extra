@@ -17,6 +17,7 @@ TOOL_NO_EXPORTS = 1
 include $(CLANG_LEVEL)/../../Makefile.config
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser bitreader support mc option
 USEDLIBS = clangTidy.a clangTidyLLVMModule.a clangTidyGoogleModule.a \
+           clangTidyMesosModule.a \
            clangTidyMiscModule.a clangTidyModernizeModule.a \
 	   clangTidyPerformanceModule.a clangTidyReadability.a \
 	   clangTidyUtils.a clangTidyCERTModule.a clangStaticAnalyzerFrontend.a \

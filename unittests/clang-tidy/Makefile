@@ -14,6 +14,7 @@ TESTNAME = ClangTidy
 LINK_COMPONENTS := asmparser bitreader support MC MCParser option \
 		 TransformUtils
 USEDLIBS = clangTidy.a clangTidyLLVMModule.a clangTidyGoogleModule.a \
+     clangTidyMesosModule.a \
 	   clangTidyMiscModule.a clangTidyReadability.a clangTidy.a \
 	   clangTidyUtils.a \
 	   clangStaticAnalyzerFrontend.a clangStaticAnalyzerCheckers.a \
