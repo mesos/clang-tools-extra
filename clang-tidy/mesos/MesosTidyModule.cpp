@@ -10,7 +10,9 @@
 #include "../ClangTidy.h"
 #include "../ClangTidyModule.h"
 #include "../ClangTidyModuleRegistry.h"
+
 #include "NamespaceCommentCheck.h"
+#include "ThisCaptureCheck.h"
 
 namespace clang {
 namespace tidy {
