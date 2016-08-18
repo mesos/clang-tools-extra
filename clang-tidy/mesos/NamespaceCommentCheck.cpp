@@ -1,3 +1,12 @@
+//===--- NamespaceCommentCheck.cpp - clang-tidy ---------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 #include "NamespaceCommentCheck.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -13,8 +22,12 @@ namespace mesos {
 NamespaceCommentCheck::NamespaceCommentCheck(StringRef Name,
                                              ClangTidyContext *Context)
     : ClangTidyCheck(Name, Context),
-      NamespaceCommentPattern("^// namespace (([a-zA-Z0-9_]+) )?{$",
-                              llvm::Regex::IgnoreCase) {}
+      NamespaceCommentPattern("^// namespace (([a-zA-Z0-9_]+) )?{$"),
+      ShortNamespaceLines(Options.get("ShortNamespaceLines", 10u)) {}
+
+void NamespaceCommentCheck::storeOptions(ClangTidyOptions::OptionMap &Opts) {
+  Options.store(Opts, "ShortNamespaceLines", ShortNamespaceLines);
+}
 
 void NamespaceCommentCheck::registerMatchers(MatchFinder *Finder) {
   // Only register the matchers for C++; the functionality currently does not
@@ -47,10 +60,11 @@ void NamespaceCommentCheck::check(const MatchFinder::MatchResult &Result) {
   if (!locationsInSameFile(Sources, ND->getLocStart(), ND->getRBraceLoc()))
     return;
 
-  // Don't require closing comments for namespaces spanning less than 1 line.
+  // Don't require closing comments for namespaces spanning less than certain
+  // number of lines.
   unsigned StartLine = Sources.getSpellingLineNumber(ND->getLocStart());
   unsigned EndLine = Sources.getSpellingLineNumber(ND->getRBraceLoc());
-  if (EndLine - StartLine + 1 <= 1u)
+  if (EndLine - StartLine + 1 <= ShortNamespaceLines)
     return;
 
   // Find next token after the namespace closing brace.
@@ -58,7 +72,8 @@ void NamespaceCommentCheck::check(const MatchFinder::MatchResult &Result) {
   SourceLocation Loc = AfterRBrace;
   Token Tok;
   // Skip whitespace until we find the next token.
-  while (Lexer::getRawToken(Loc, Tok, Sources, Result.Context->getLangOpts())) {
+  while (Lexer::getRawToken(Loc, Tok, Sources, Result.Context->getLangOpts()) ||
+         Tok.is(tok::semi)) {
     Loc = Loc.getLocWithOffset(1);
   }
   if (!locationsInSameFile(Sources, ND->getRBraceLoc(), Loc))
