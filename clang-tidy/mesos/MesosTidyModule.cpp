@@ -28,8 +28,8 @@ public:
 };
 
 // Register the MesosModule using this statically initialized variable.
-static ClangTidyModuleRegistry::Add<MesosModule>
-    X("mesos-module", "Adds mesos-related checks.");
+static ClangTidyModuleRegistry::Add<MesosModule> X("mesos-module",
+                                                   "Adds Mesos lint checks.");
 
 } // namespace mesos
 

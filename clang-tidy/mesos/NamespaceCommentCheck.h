@@ -1,3 +1,12 @@
+//===--- NamespaceCommentCheck.h - clang-tidy -------------------*- C++ -*-===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
 #ifndef LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_MESOS_NAMESPACECOMMENTCHECK_H
 #define LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_MESOS_NAMESPACECOMMENTCHECK_H
 
@@ -20,7 +29,10 @@ public:
   void check(const ast_matchers::MatchFinder::MatchResult &Result) override;
 
 private:
+  void storeOptions(ClangTidyOptions::OptionMap &Options) override;
+
   llvm::Regex NamespaceCommentPattern;
+  const unsigned ShortNamespaceLines;
 };
 
 } // namespace mesos

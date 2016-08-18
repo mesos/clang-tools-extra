@@ -12,7 +12,6 @@ add_extra_unittest(ClangTidyTests
   IncludeInserterTest.cpp
   GoogleModuleTest.cpp
   LLVMModuleTest.cpp
-  MesosModuleTest.cpp
   MiscModuleTest.cpp
   OverlappingReplacementsTest.cpp
   ReadabilityModuleTest.cpp)
@@ -26,7 +25,6 @@ target_link_libraries(ClangTidyTests
   clangTidy
   clangTidyGoogleModule
   clangTidyLLVMModule
-  clangTidyMesosModule
   clangTidyMiscModule
   clangTidyReadabilityModule
   clangTidyUtils
