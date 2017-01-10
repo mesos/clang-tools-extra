@@ -1,4 +1,4 @@
-//===--- FlagsCheck.cpp - clang-tidy---------------------------------------===//
+//===--- FlagsInheritanceCheck.cpp - clang-tidy----------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "FlagsCheck.h"
+#include "FlagsInheritanceCheck.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 
@@ -17,22 +17,33 @@ namespace clang {
 namespace tidy {
 namespace mesos {
 
-void FlagsCheck::registerMatchers(MatchFinder *Finder) {
-  Finder->addMatcher(cxxRecordDecl(isDerivedFrom("FlagsBase")).bind("flags"),
-                     this);
+void FlagsInheritanceCheck::registerMatchers(MatchFinder *Finder) {
+  Finder->addMatcher(
+      cxxRecordDecl(
+          isDerivedFrom(namedDecl(hasName("FlagsBase"),
+                                  hasParent(namespaceDecl(hasName("flags"))))
+                            .bind("flags_decl")))
+          .bind("flags-inheritance"),
+      this);
 }
 
 namespace {
-bool isDerivedFromFlagsBase(const CXXRecordDecl &decl) {
-  return llvm::any_of(decl.bases(), [](const CXXBaseSpecifier &base) {
+bool isDerivedFromFlagsBase(const CXXRecordDecl *decl,
+                            const CXXRecordDecl *flagsDecl) {
+  assert(decl);
+  assert(flagsDecl);
+
+  return llvm::any_of(decl->bases(), [flagsDecl](const CXXBaseSpecifier &base) {
     const auto *decl = base.getType()->getAsCXXRecordDecl();
-    return decl->getName() == "FlagsBase" || isDerivedFromFlagsBase(*decl);
+    return decl->getName() == "FlagsBase" ||
+           isDerivedFromFlagsBase(decl, flagsDecl);
   });
 }
 }
 
-void FlagsCheck::check(const MatchFinder::MatchResult &Result) {
-  const auto *derivedDecl = Result.Nodes.getNodeAs<CXXRecordDecl>("flags");
+void FlagsInheritanceCheck::check(const MatchFinder::MatchResult &Result) {
+  const auto *derivedDecl = Result.Nodes.getNodeAs<CXXRecordDecl>("flags-inheritance");
+  const auto *flagsDecl = Result.Nodes.getNodeAs<CXXRecordDecl>("flags_decl");
 
   // We explicitly iterate the bases here so we can emit diagnostic pointing to
   // the exact inheritance introducing the issue.
@@ -41,8 +52,7 @@ void FlagsCheck::check(const MatchFinder::MatchResult &Result) {
 
     // First check if this inheritance is from 'FlagsBase' or any of its
     // descendants.
-    if (baseDecl->getName() != "FlagsBase" &&
-        !isDerivedFromFlagsBase(*baseDecl)) {
+    if (baseDecl != flagsDecl && !isDerivedFromFlagsBase(baseDecl, flagsDecl)) {
       continue;
     }
 
