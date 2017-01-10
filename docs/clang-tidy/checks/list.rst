@@ -76,7 +76,7 @@ Clang-Tidy Checks
    llvm-include-order
    llvm-namespace-comment
    llvm-twine-local
-   mesos-flags
+   mesos-flags-inheritance
    mesos-this-capture
    misc-argument-comment
    misc-assert-side-effect
