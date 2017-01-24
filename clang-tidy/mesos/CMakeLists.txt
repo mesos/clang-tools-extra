@@ -5,6 +5,7 @@ add_clang_library(clangTidyMesosModule
   MesosTidyModule.cpp
   NamespaceCommentCheck.cpp
   ThisCaptureCheck.cpp
+  UnusedReturnValueCheck.cpp
 
   LINK_LIBS
   clangAST

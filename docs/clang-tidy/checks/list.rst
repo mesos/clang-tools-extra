@@ -52,6 +52,7 @@ Clang-Tidy Checks
    llvm-twine-local
    mesos-flags-inheritance
    mesos-this-capture
+   mesos-unused-return-value
    misc-argument-comment
    misc-assert-side-effect
    misc-bool-pointer-implicit-conversion

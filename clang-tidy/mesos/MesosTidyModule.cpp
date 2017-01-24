@@ -10,6 +10,7 @@
 #include "../ClangTidy.h"
 #include "../ClangTidyModule.h"
 #include "../ClangTidyModuleRegistry.h"
+#include "UnusedReturnValueCheck.h"
 
 #include "FlagsInheritanceCheck.h"
 #include "NamespaceCommentCheck.h"
@@ -27,6 +28,11 @@ public:
     CheckFactories.registerCheck<NamespaceCommentCheck>(
         "mesos-namespace-comment");
     CheckFactories.registerCheck<ThisCaptureCheck>("mesos-this-capture");
+
+    // TODO(bbannier): Graduate this checker from alpha once the code base is
+    // cleaned up.
+    CheckFactories.registerCheck<UnusedReturnValueCheck>(
+        "alpha-mesos-unused-return-value");
   }
 };
 
