@@ -1,29 +1,29 @@
 // RUN: %check_clang_tidy %s mesos-this-capture %t
 
+struct Nothing {};
+
 namespace process {
 template <typename>
 struct Future {
-  template <typename F> Future onAny(F) { return {}; };
-  template <typename F> Future then(F) { return {}; };
+  template <typename AnyCallback>
+  Future onAny(AnyCallback &&) { return {}; };
 };
 
 template <typename F>
-Future<void> defer(int pid, F) { return {}; }
+Future<Nothing> defer(int /*pid*/, F) { return {}; }
 
+template <typename PID, typename Iterate, typename Body>
+Future<Nothing> loop(const PID &pid, Iterate &&iterate, Body &&body) { return {}; }
 } // namespace process  {
 
 using process::Future;
 using process::defer;
+using process::loop;
 
 struct S {
-  Future<void> future() const { return {}; }
-
-  // TODO(bbannier): Rework matcher to check all branches of a chained Future.
+  Future<Nothing> future() const { return {}; }
 
   void f() {
-    future()
-        // CHECK-MESSAGES: :[[@LINE+1]]:15: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
-        .then([this]() { (void)this; });
     future()
         // CHECK-MESSAGES: :[[@LINE+1]]:16: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
         .onAny([this]() { (void)this; });
@@ -31,32 +31,54 @@ struct S {
 
     void g() {
       future()
-          // CHECK-MESSAGES: :[[@LINE+1]]:17: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
-          .then([=]() { (void)this; });
-      future()
           // CHECK-MESSAGES: :[[@LINE+1]]:18: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
-          .onAny([=]() { (void)this->i; });
+          .onAny([=]() { (void)this; });
     }
 
-    // TODO(bbannier): Check referenced lambda.
-    // void h() {
-    //   auto l = [=]() { (void)this; };
-    //   // DISABLEDCHECK-MESSAGES: :[[@LINE+1]]:21: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
-    //   future().then(l);
-    // }
+    void h() {
+      auto l = [=]() { (void)this; };
+      // CHECK-MESSAGES: :[[@LINE+1]]:22: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
+      future().onAny(l);
+    }
+};
 
-    int i = 0;
+struct P {
+  Future<Nothing> future() const { return {}; }
+
+  void f() {
+    // CHECK-MESSAGES: :[[@LINE+1]]:16: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
+    loop(this, [this]() { (void)this; }, []() {});
+    // CHECK-MESSAGES: :[[@LINE+1]]:25: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
+    loop(this, []() {}, [this]() { (void)this; });
+
+    auto l = [this]() { (void)this; };
+    // CHECK-MESSAGES: :[[@LINE+1]]:16: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
+    loop(this, l, []() {});
+    // CHECK-MESSAGES: :[[@LINE+1]]:25: warning: callback capturing this should be dispatched/deferred to a specific PID [mesos-this-capture]
+    loop(this, []() {}, l);
+  }
 };
 
 // Negatives.
 void f() {
-  Future<void>().onAny([]() {});
-  Future<void>().then([]() {});
+  Future<Nothing>().onAny([]() {});
 };
 
 struct K {
     void f() {
-      Future<void>()
-          .then(defer(0, [=]() { (void)this; }));
+      auto future = Future<Nothing>();
+
+      future
+          .onAny(defer(0, [=]() { (void)this; }));
+
+      auto l = []() {};
+      future.onAny(l);
     }
 };
+
+void g() {
+  K k;
+  loop(k, []() {}, []() {});
+  loop(k, [k]() {}, []() {});
+  loop(k, []() {}, [k]() {});
+}
