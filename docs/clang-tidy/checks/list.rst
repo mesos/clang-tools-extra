@@ -189,6 +189,7 @@ Clang-Tidy Checks
    llvm-prefer-isa-or-dyn-cast-in-conditionals
    llvm-twine-local
    mesos-flags-inheritance
+   mesos-redundant-get
    mesos-this-capture
    misc-definitions-in-headers
    misc-misplaced-const
