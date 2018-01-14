@@ -10,6 +10,7 @@
 #include "../ClangTidy.h"
 #include "../ClangTidyModule.h"
 #include "../ClangTidyModuleRegistry.h"
+#include "RedundantGetCheck.h"
 
 #include "FlagsInheritanceCheck.h"
 #include "NamespaceCommentCheck.h"
@@ -24,6 +25,8 @@ public:
   void addCheckFactories(ClangTidyCheckFactories &CheckFactories) override {
     CheckFactories.registerCheck<FlagsInheritanceCheck>(
         "mesos-flags-inheritance");
+    CheckFactories.registerCheck<RedundantGetCheck>(
+        "mesos-redundant-get");
     CheckFactories.registerCheck<NamespaceCommentCheck>(
         "mesos-namespace-comments");
     CheckFactories.registerCheck<ThisCaptureCheck>("mesos-this-capture");
